@@ -2,9 +2,10 @@
 
 module Services
   class BookingRequestsImporter
-    attr_reader :filepath
+    attr_reader :filepath, :event
     def initialize(file_name = nil)
       raise ArgumentError, 'Filename needs to be provided' unless file_name
+      @event = Event.find_by(name: 'Test Event')
 
       @filepath = ENV['BOOKING_IMPORT_PATH'] + '/' + file_name
     end
@@ -12,12 +13,12 @@ module Services
     def process_booking_file
       batch = import_files_to_db
       batch.booking_requests.each do |booking_request|
-        new_booking = Booking.new(status: Booking::IN_PROGRESS_STATUS)
-        new_booking.external_booking_id = booking_request.external_booking_id
-        (booking_request.index_of_first_seat_row..booking_request.index_of_last_seat_row).each do |row_id|
+        new_booking = Booking.create!(status: Booking::IN_PROGRESS_STATUS, external_booking_id: booking_request.external_booking_id, event: event)
+        row_ids = (booking_request.index_of_first_seat_row..booking_request.index_of_last_seat_row).to_a
+        seat_ids = (booking_request.index_of_first_seat_within_row..booking_request.index_of_first_seat_within_row).to_a
 
-        end
-
+        seats = TheatreSeat.for_row_and_seat_indexes(row_ids,seat_ids)
+        create_booking_reservations(new_booking, seats)
       end
     end
 
@@ -47,6 +48,22 @@ module Services
     end
 
     private
+
+    def create_booking_reservations(new_booking, seats)
+      seats.each do |seat|
+        create_a_reservation(new_booking, seat)
+      end
+
+      new_booking.status = Booking::COMPLETED_STATUS
+      new_booking.save!
+    end
+
+    def create_a_reservation(new_booking, seat)
+      new_reservation                 = Reservation.new
+      new_reservation.theatre_seat_id = seat.id
+      new_reservation.booking_id         = new_booking.id
+      new_reservation.save!
+    end
 
     def process_all_text_file_rows(batch)
       clean_array_data.each do |text_file_row|
