@@ -11,7 +11,25 @@ RSpec.describe ::Services::BookingRequestsImporter do
     expect(importer.filepath).to eq filepath
   end
 
-  fit 'imports the booking request data to database' do
+  it 'imports the booking request data to database' do
     expect { importer.import_files_to_db }.to change { BookingRequestImportBatch.count && BookingRequest.count }
   end
+
+  # it 'creates successful bookings' do
+  #   importer.import_files_to_db
+  #
+  #   expect { importer.process_booking_file }.to change { Booking.count }
+  # end
+
+  # it 'creates successful reservations' do
+  #   importer.import_files_to_db
+  #
+  #   expect { importer.process_booking_file }.to change { Reservation.count }
+  # end
+
+  # it 'creates failed bookings which have not passed validation' do
+  #   importer.import_files_to_db
+  #   importer.process_booking_file
+  #   expect(Booking.failed_bookings.count).to eq 10
+  # end
 end

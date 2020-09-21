@@ -9,8 +9,16 @@ module Services
       @filepath = ENV['BOOKING_IMPORT_PATH'] + '/' + file_name
     end
 
-    def import_bookings
+    def process_booking_file
+      batch = import_files_to_db
+      batch.booking_requests.each do |booking_request|
+        new_booking = Booking.new(status: Booking::IN_PROGRESS_STATUS)
+        new_booking.external_booking_id = booking_request.external_booking_id
+        (booking_request.index_of_first_seat_row..booking_request.index_of_last_seat_row).each do |row_id|
 
+        end
+
+      end
     end
 
     def import_files_to_db
@@ -22,6 +30,7 @@ module Services
 
       batch.status = BookingRequestImportBatch::IMPORT_COMPLETED_STATUS unless batch.status == BookingRequestImportBatch::IMPORT_COMPLETED_WITH_ERRORS_STATUS
       batch.save!
+      batch
     end
 
     def clean_array_data
