@@ -25,3 +25,9 @@ row_numbers.each do |row_number|
     end
   end
 end
+
+event = Event.find_or_initialize_by(name: 'Test Event')
+event.starts_at = DateTime.now + 1.month
+event.ends_at = DateTime.now + 1.month + 1.day
+event.save!
+
