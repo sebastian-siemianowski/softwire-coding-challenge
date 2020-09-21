@@ -9,14 +9,18 @@ module Services
       @filepath = ENV['BOOKING_IMPORT_PATH'] + '/' + file_name
     end
 
+    def import_bookings
+
+    end
+
     def import_files_to_db
       batch = BookingRequestImportBatch.new
-      batch.status = 'in_progress'
+      batch.status = BookingRequestImportBatch::IN_PROGRESS_STATUS
       batch.save!
 
       process_all_text_file_rows(batch)
 
-      batch.status = 'import_completed' unless batch.status == 'completed_with_errors'
+      batch.status = BookingRequestImportBatch::IMPORT_COMPLETED_STATUS unless batch.status == BookingRequestImportBatch::IMPORT_COMPLETED_WITH_ERRORS_STATUS
       batch.save!
     end
 
@@ -55,7 +59,7 @@ module Services
       rescue StandardError => e
         error                     = "#{e.message.to_json} + #{e.backtrace.to_json}"
         booking_request.error_log = error
-        batch.status = 'completed_with_errors'
+        batch.status = BookingRequestImportBatch::IMPORT_COMPLETED_WITH_ERRORS_STATUS
         booking_request.save!
       end
     end
