@@ -25,11 +25,11 @@ RSpec.describe ::Services::BookingRequestsImporter do
 
   it 'creates specified number of successful bookings' do
     importer.process_booking_file
-    expect(Booking.completed.count).to eq 499
+    expect(Booking.completed.count).to eq 498
   end
 
   it 'creates specified number of failed bookings' do
     importer.process_booking_file
-    expect(Booking.failed.count).to eq 1
+    expect(Booking.failed.count).to eq 2
   end
 end

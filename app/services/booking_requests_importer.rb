@@ -19,6 +19,8 @@ module Services
         seats = TheatreSeat.for_row_and_seat_indexes(row_ids, seat_ids)
         new_booking = Booking.create!(status: Booking::IN_PROGRESS_STATUS, external_booking_id: booking_request.external_booking_id, event: event)
         new_booking.seats = seats
+        new_booking.row_ids = row_ids
+        new_booking.seat_ids = seat_ids
         new_booking.create_booking_reservations
       end
     end
