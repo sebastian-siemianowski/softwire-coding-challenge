@@ -16,20 +16,20 @@ RSpec.describe ::Services::BookingRequestsImporter do
   end
 
   it 'creates successful bookings' do
-    importer.import_files_to_db
-
     expect { importer.process_booking_file }.to change { Booking.count }
   end
 
   it 'creates successful reservations' do
-    importer.import_files_to_db
-
     expect { importer.process_booking_file }.to change { Reservation.count }
   end
 
-  # it 'creates failed bookings which have not passed validation' do
-  #   importer.import_files_to_db
-  #   importer.process_booking_file
-  #   expect(Booking.failed_bookings.count).to eq 10
-  # end
+  it 'creates specified number of successful bookings' do
+    importer.process_booking_file
+    expect(Booking.completed.count).to eq 499
+  end
+
+  it 'creates specified number of failed bookings' do
+    importer.process_booking_file
+    expect(Booking.failed.count).to eq 1
+  end
 end

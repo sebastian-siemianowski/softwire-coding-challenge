@@ -12,13 +12,14 @@ module Services
 
     def process_booking_file
       batch = import_files_to_db
+
       batch.booking_requests.each do |booking_request|
-        new_booking = Booking.create!(status: Booking::IN_PROGRESS_STATUS, external_booking_id: booking_request.external_booking_id, event: event)
         row_ids = (booking_request.index_of_first_seat_row..booking_request.index_of_last_seat_row).to_a
         seat_ids = (booking_request.index_of_first_seat_within_row..booking_request.index_of_first_seat_within_row).to_a
-
-        seats = TheatreSeat.for_row_and_seat_indexes(row_ids,seat_ids)
-        create_booking_reservations(new_booking, seats)
+        seats = TheatreSeat.for_row_and_seat_indexes(row_ids, seat_ids)
+        new_booking = Booking.create!(status: Booking::IN_PROGRESS_STATUS, external_booking_id: booking_request.external_booking_id, event: event)
+        new_booking.seats = seats
+        new_booking.create_booking_reservations
       end
     end
 
@@ -48,22 +49,6 @@ module Services
     end
 
     private
-
-    def create_booking_reservations(new_booking, seats)
-      seats.each do |seat|
-        create_a_reservation(new_booking, seat)
-      end
-
-      new_booking.status = Booking::COMPLETED_STATUS
-      new_booking.save!
-    end
-
-    def create_a_reservation(new_booking, seat)
-      new_reservation                 = Reservation.new
-      new_reservation.theatre_seat_id = seat.id
-      new_reservation.booking_id         = new_booking.id
-      new_reservation.save!
-    end
 
     def process_all_text_file_rows(batch)
       clean_array_data.each do |text_file_row|
