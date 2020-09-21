@@ -6,6 +6,7 @@ require 'rails'
 require 'active_model/railtie'
 require 'active_record/railtie'
 require 'active_storage/engine'
+require 'csv'
 
 Bundler.require(*Rails.groups)
 

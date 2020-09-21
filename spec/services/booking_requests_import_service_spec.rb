@@ -11,11 +11,7 @@ RSpec.describe ::Services::BookingRequestsImporter do
     expect(importer.filepath).to eq filepath
   end
 
-  it 'imports all the booking request data to database' do
-
-
-
-
-
+  fit 'imports the booking request data to database' do
+    expect { importer.import_files_to_db }.to change { BookingRequestImportBatch.count && BookingRequest.count }
   end
 end
