@@ -12,12 +12,12 @@ module Services
     end
 
     def process_booking_file
-      Rails.logger.info 'Starting Import of Booking Requests to database'
+      Rails.logger.info 'Starting Import of Booking Requests to database' unless ENV['RAILS_ENV'] == 'test'
       batch = import_files_to_db
-      Rails.logger.info 'Completed Import of Booking Requests to database'
+      Rails.logger.info 'Completed Import of Booking Requests to database' unless ENV['RAILS_ENV'] == 'test'
 
-      Rails.logger.info 'Starting Processing Booking Requests from db'
-      Rails.logger.info "Found #{batch.booking_requests.count} Booking Requests ready to be processed"
+      Rails.logger.info 'Starting Processing Booking Requests from db' unless ENV['RAILS_ENV'] == 'test'
+      Rails.logger.info "Found #{batch.booking_requests.count} Booking Requests ready to be processed" unless ENV['RAILS_ENV'] == 'test'
 
       successful_bookings = []
       unsuccessful_bookings = []
@@ -39,9 +39,9 @@ module Services
         end
       end
 
-      Rails.logger.info 'Completed Processing Booking Request Records'
-      Rails.logger.info "#{successful_bookings.count} Successful Bookings had been created"
-      Rails.logger.info "#{unsuccessful_bookings.count} Bookings failed - This would happen if Booking Request did not pass validation"
+      Rails.logger.info 'Completed Processing Booking Request Records' unless ENV['RAILS_ENV'] == 'test'
+      Rails.logger.info "#{successful_bookings.count} Successful Bookings had been created" unless ENV['RAILS_ENV'] == 'test'
+      Rails.logger.info "#{unsuccessful_bookings.count} Bookings failed - This would happen if Booking Request did not pass validation" unless ENV['RAILS_ENV'] == 'test'
     end
 
     def import_files_to_db
