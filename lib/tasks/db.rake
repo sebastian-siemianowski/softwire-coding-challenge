@@ -7,7 +7,7 @@ namespace :db do
   end
 
   desc 'Setup normal database'
-  task :setup_test_db do
+  task :setup_db do
     system('rake db:drop db:create db:migrate db:seed')
   end
 end

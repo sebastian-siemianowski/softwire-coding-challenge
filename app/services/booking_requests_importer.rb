@@ -6,13 +6,21 @@ module Services
     def initialize(file_name = nil)
       raise ArgumentError, 'Filename needs to be provided' unless file_name
 
-      @event = Event.find_by(name: 'Test Event')
+      @event = ::Event.find_by(name: 'Test Event')
 
       @filepath = ENV['BOOKING_IMPORT_PATH'] + '/' + file_name
     end
 
     def process_booking_file
+      Rails.logger.info 'Starting Import of Booking Requests to database'
       batch = import_files_to_db
+      Rails.logger.info 'Completed Import of Booking Requests to database'
+
+      Rails.logger.info 'Starting Processing Booking Requests from db'
+      Rails.logger.info "Found #{batch.booking_requests.count} Booking Requests ready to be processed"
+
+      successful_bookings = []
+      unsuccessful_bookings = []
 
       batch.booking_requests.each do |booking_request|
         row_ids = (booking_request.index_of_first_seat_row..booking_request.index_of_last_seat_row).to_a
@@ -23,7 +31,17 @@ module Services
         new_booking.row_ids = row_ids
         new_booking.seat_ids = seat_ids
         new_booking.create_booking_reservations
+
+        if ::Booking::FAILED_STATUSES.include?(new_booking.status)
+          unsuccessful_bookings << new_booking
+        elsif new_booking.status == ::Booking::COMPLETED_STATUS
+          successful_bookings  << new_booking
+        end
       end
+
+      Rails.logger.info "Completed Processing Booking Request Records"
+      Rails.logger.info "#{successful_bookings.count} Successful Bookings had been created"
+      Rails.logger.info "#{unsuccessful_bookings.count} Bookings failed - This would happen if Booking Request did not pass validation"
     end
 
     def import_files_to_db
