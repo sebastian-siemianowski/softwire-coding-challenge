@@ -1,15 +1,17 @@
+# frozen_string_literal: true
+
 class Booking < ApplicationRecord
   belongs_to :event
   attr_accessor :seats, :row_ids, :seat_ids
 
-  IN_PROGRESS_STATUS                      = 'in_progress'.freeze
-  COMPLETED_STATUS                        = 'completed'.freeze
-  FAILED_BOOKING                          = 'failed'.freeze
-  NO_SEATS_AVAILABLE                      = 'failed__no_seats_available'.freeze
-  SEATS_ALREADY_TAKEN                     = 'failed__seats_already_taken'.freeze
-  SEATS_ARE_NOT_ON_THE_SAME_ROW           = 'failed__seats_are_not_on_the_same_row'.freeze
-  MAXIMUM_AMOUNT_OF_RESERVATIONS_EXCEEDED = 'failed__maximum_amount_of_reservations_exceeded'.freeze
-  SEATS_ARE_NOT_CONTINUOUS                = "failed__seats_are_not_continuous"
+  IN_PROGRESS_STATUS                      = 'in_progress'
+  COMPLETED_STATUS                        = 'completed'
+  FAILED_BOOKING                          = 'failed'
+  NO_SEATS_AVAILABLE                      = 'failed__no_seats_available'
+  SEATS_ALREADY_TAKEN                     = 'failed__seats_already_taken'
+  SEATS_ARE_NOT_ON_THE_SAME_ROW           = 'failed__seats_are_not_on_the_same_row'
+  MAXIMUM_AMOUNT_OF_RESERVATIONS_EXCEEDED = 'failed__maximum_amount_of_reservations_exceeded'
+  SEATS_ARE_NOT_CONTINUOUS                = 'failed__seats_are_not_continuous'
 
   FAILED_STATUSES = [FAILED_BOOKING, NO_SEATS_AVAILABLE, SEATS_ALREADY_TAKEN,
                      SEATS_ARE_NOT_ON_THE_SAME_ROW, MAXIMUM_AMOUNT_OF_RESERVATIONS_EXCEEDED, SEATS_ARE_NOT_CONTINUOUS].freeze
@@ -54,7 +56,7 @@ class Booking < ApplicationRecord
   end
 
   def seats_are_already_taken
-    Reservation.for_seats(seats.pluck(:id)).count > 0
+    Reservation.for_seats(seats.pluck(:id)).count.positive?
   end
 
   def booking_is_for_five_or_more_seats

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TheatreSeat < ApplicationRecord
   has_many :reservations
   belongs_to :theatre_seat_row

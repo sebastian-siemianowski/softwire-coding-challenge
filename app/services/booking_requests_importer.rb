@@ -5,6 +5,7 @@ module Services
     attr_reader :filepath, :event
     def initialize(file_name = nil)
       raise ArgumentError, 'Filename needs to be provided' unless file_name
+
       @event = Event.find_by(name: 'Test Event')
 
       @filepath = ENV['BOOKING_IMPORT_PATH'] + '/' + file_name
@@ -32,7 +33,9 @@ module Services
 
       process_all_text_file_rows(batch)
 
-      batch.status = BookingRequestImportBatch::IMPORT_COMPLETED_STATUS unless batch.status == BookingRequestImportBatch::IMPORT_COMPLETED_WITH_ERRORS_STATUS
+      unless batch.status == BookingRequestImportBatch::IMPORT_COMPLETED_WITH_ERRORS_STATUS
+        batch.status = BookingRequestImportBatch::IMPORT_COMPLETED_STATUS
+      end
       batch.save!
       batch
     end
@@ -53,28 +56,31 @@ module Services
     private
 
     def process_all_text_file_rows(batch)
-      clean_array_data.each do |text_file_row|
-        process_text_file_row(batch, text_file_row)
-      end
+      clean_array_data.each { |text_file_row| process_text_file_row(batch, text_file_row) }
     end
 
     def process_text_file_row(batch, text_file_row)
       booking_request                              = BookingRequest.new
       booking_request.booking_request_import_batch = batch
+
       begin
-        booking_request.external_booking_id            = text_file_row[:external_booking_id]
-        booking_request.index_of_first_seat_row        = text_file_row[:index_of_first_seat_row]
-        booking_request.index_of_first_seat_within_row = text_file_row[:index_of_first_seat_within_row]
-        booking_request.index_of_last_seat_row         = text_file_row[:index_of_last_seat_row]
-        booking_request.index_of_last_seat_within_row  = text_file_row[:index_of_last_seat_within_row]
-        booking_request.processed_status               = BookingRequest::UNPROCESSED_STATUS
-        booking_request.save!
+        map_values_to_booking_request(booking_request, text_file_row)
       rescue StandardError => e
         error                     = "#{e.message.to_json} + #{e.backtrace.to_json}"
         booking_request.error_log = error
         batch.status = BookingRequestImportBatch::IMPORT_COMPLETED_WITH_ERRORS_STATUS
         booking_request.save!
       end
+    end
+
+    def map_values_to_booking_request(booking_request, text_file_row)
+      booking_request.external_booking_id            = text_file_row[:external_booking_id]
+      booking_request.index_of_first_seat_row        = text_file_row[:index_of_first_seat_row]
+      booking_request.index_of_first_seat_within_row = text_file_row[:index_of_first_seat_within_row]
+      booking_request.index_of_last_seat_row         = text_file_row[:index_of_last_seat_row]
+      booking_request.index_of_last_seat_within_row  = text_file_row[:index_of_last_seat_within_row]
+      booking_request.processed_status               = BookingRequest::UNPROCESSED_STATUS
+      booking_request.save!
     end
   end
 end
