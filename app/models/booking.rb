@@ -5,14 +5,14 @@ class Booking < ApplicationRecord
   IN_PROGRESS_STATUS                      = 'in_progress'.freeze
   COMPLETED_STATUS                        = 'completed'.freeze
   FAILED_BOOKING                          = 'failed'.freeze
-  TOO_MANY_BOOKINGS                       = 'failed__too_many_bookings'.freeze
   NO_SEATS_AVAILABLE                      = 'failed__no_seats_available'.freeze
   SEATS_ALREADY_TAKEN                     = 'failed__seats_already_taken'.freeze
   SEATS_ARE_NOT_ON_THE_SAME_ROW           = 'failed__seats_are_not_on_the_same_row'.freeze
   MAXIMUM_AMOUNT_OF_RESERVATIONS_EXCEEDED = 'failed__maximum_amount_of_reservations_exceeded'.freeze
+  SEATS_ARE_NOT_CONTINUOUS                = "failed__seats_are_not_continuous"
 
-  FAILED_STATUSES = [FAILED_BOOKING, TOO_MANY_BOOKINGS, NO_SEATS_AVAILABLE, SEATS_ALREADY_TAKEN,
-                     SEATS_ARE_NOT_ON_THE_SAME_ROW, MAXIMUM_AMOUNT_OF_RESERVATIONS_EXCEEDED].freeze
+  FAILED_STATUSES = [FAILED_BOOKING, NO_SEATS_AVAILABLE, SEATS_ALREADY_TAKEN,
+                     SEATS_ARE_NOT_ON_THE_SAME_ROW, MAXIMUM_AMOUNT_OF_RESERVATIONS_EXCEEDED, SEATS_ARE_NOT_CONTINUOUS].freeze
 
   scope :in_progress, -> { where(status: IN_PROGRESS_STATUS) }
   scope :failed, -> { where(status: FAILED_STATUSES) }
@@ -38,9 +38,15 @@ class Booking < ApplicationRecord
       self.status = Booking::SEATS_ARE_NOT_ON_THE_SAME_ROW
     elsif booking_is_for_five_or_more_seats
       self.status = Booking::MAXIMUM_AMOUNT_OF_RESERVATIONS_EXCEEDED
+    elsif seats_are_not_continuous
+      self.status = Booking::SEATS_ARE_NOT_CONTINUOUS
     end
-    
+
     true unless FAILED_STATUSES.include?(status)
+  end
+
+  def seats_are_not_continuous
+    !seat_ids.sort.each_cons(2).all? { |x, y| y == x + 1 }
   end
 
   def seats_are_on_different_rows
