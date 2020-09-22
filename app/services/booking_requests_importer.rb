@@ -35,11 +35,11 @@ module Services
         if ::Booking::FAILED_STATUSES.include?(new_booking.status)
           unsuccessful_bookings << new_booking
         elsif new_booking.status == ::Booking::COMPLETED_STATUS
-          successful_bookings  << new_booking
+          successful_bookings << new_booking
         end
       end
 
-      Rails.logger.info "Completed Processing Booking Request Records"
+      Rails.logger.info 'Completed Processing Booking Request Records'
       Rails.logger.info "#{successful_bookings.count} Successful Bookings had been created"
       Rails.logger.info "#{unsuccessful_bookings.count} Bookings failed - This would happen if Booking Request did not pass validation"
     end
